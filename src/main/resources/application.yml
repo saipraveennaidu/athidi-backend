@@ -22,3 +22,7 @@ logging:
 
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"
+
+jwt:
+  secret: 9d2f8a4c7b6e1f3a8d9c2b5e7f1a6c4d9e8f2b7c1a5e6d3f8b9c2a4e7f6d1b3
+  expiration: 86400000
