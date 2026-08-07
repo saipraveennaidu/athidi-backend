@@ -1,6 +1,6 @@
 package com.athidi.security;
 
-import com.athidi.common.entity.User;
+import com.athidi.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
