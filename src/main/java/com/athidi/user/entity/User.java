@@ -1,13 +1,15 @@
-package com.athidi.common.entity;
+package com.athidi.user.entity;
 
 import com.athidi.common.entity.BaseEntity;
 import com.athidi.common.enums.Role;
+import com.athidi.property.entity.Property;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -48,4 +50,12 @@ public class User extends BaseEntity{
 
     @Builder.Default
     private Boolean emailVerified = false;
+
+    @OneToMany(
+            mappedBy = "owner",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Property> properties = new ArrayList<>();
 }
