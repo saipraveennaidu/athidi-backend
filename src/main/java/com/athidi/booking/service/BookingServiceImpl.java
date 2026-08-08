@@ -3,7 +3,7 @@ package com.athidi.booking.service;
 import com.athidi.booking.dto.BookingResponse;
 import com.athidi.booking.dto.CreateBookingRequest;
 import com.athidi.booking.entity.Booking;
-import com.athidi.booking.exception.BookingException;
+import com.athidi.exception.BookingException;
 import com.athidi.booking.repository.BookingRepository;
 import com.athidi.common.enums.BookingStatus;
 import com.athidi.exception.ResourceNotFoundException;
@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

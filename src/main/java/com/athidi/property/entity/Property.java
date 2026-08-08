@@ -3,6 +3,7 @@ package com.athidi.property.entity;
 import com.athidi.booking.entity.Booking;
 import com.athidi.common.entity.BaseEntity;
 import com.athidi.common.enums.PropertyType;
+import com.athidi.review.entity.Review;
 import com.athidi.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -70,4 +71,8 @@ public class Property extends BaseEntity {
     )
     @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "property")
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
 }
