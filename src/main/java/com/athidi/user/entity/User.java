@@ -1,5 +1,6 @@
 package com.athidi.user.entity;
 
+import com.athidi.booking.entity.Booking;
 import com.athidi.common.entity.BaseEntity;
 import com.athidi.common.enums.Role;
 import com.athidi.property.entity.Property;
@@ -58,4 +59,12 @@ public class User extends BaseEntity{
     )
     @Builder.Default
     private List<Property> properties = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "customer",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Booking> bookings = new ArrayList<>();
 }
