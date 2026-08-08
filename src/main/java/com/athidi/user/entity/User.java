@@ -4,6 +4,7 @@ import com.athidi.booking.entity.Booking;
 import com.athidi.common.entity.BaseEntity;
 import com.athidi.common.enums.Role;
 import com.athidi.property.entity.Property;
+import com.athidi.review.entity.Review;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -67,4 +68,8 @@ public class User extends BaseEntity{
     )
     @Builder.Default
     private List<Booking> bookings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customer")
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
 }

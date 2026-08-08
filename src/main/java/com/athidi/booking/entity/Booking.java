@@ -3,6 +3,7 @@ package com.athidi.booking.entity;
 import com.athidi.common.entity.BaseEntity;
 import com.athidi.common.enums.BookingStatus;
 import com.athidi.property.entity.Property;
+import com.athidi.review.entity.Review;
 import com.athidi.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,4 +46,7 @@ public class Booking extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private BookingStatus status = BookingStatus.PENDING;
+
+    @OneToOne(mappedBy = "booking")
+    private Review review;
 }
