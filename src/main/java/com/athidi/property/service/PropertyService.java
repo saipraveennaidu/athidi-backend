@@ -2,6 +2,7 @@ package com.athidi.property.service;
 
 import com.athidi.property.dto.CreatePropertyRequest;
 import com.athidi.property.dto.PropertyResponse;
+import com.athidi.property.dto.PropertySearchRequest;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -14,8 +15,13 @@ public interface PropertyService {
             CreatePropertyRequest request
     );
     void deleteProperty(Long propertyId);
-//    List<PropertyResponse> getAllActiveProperties();
     Page<PropertyResponse> getAllActiveProperties(
+            int page,
+            int size,
+            String sortBy
+    );
+    Page<PropertyResponse> searchProperties(
+            PropertySearchRequest request,
             int page,
             int size,
             String sortBy
