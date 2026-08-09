@@ -6,30 +6,28 @@ import com.athidi.auth.dto.LoginResponse;
 import com.athidi.auth.dto.RegisterRequest;
 import com.athidi.auth.service.AuthService;
 import com.athidi.common.response.ApiResponse;
+import com.athidi.common.response.ApiResponseBuilder;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final ApiResponseBuilder responseBuilder;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
-        ApiResponse<AuthResponse> apiResponse =
-                ApiResponse.<AuthResponse>builder()
-                .success(true)
-                .message("Registration Successful")
-                .data(response)
-                .timestamp(LocalDateTime.now())
-                .build();
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.ok(
+                responseBuilder.success(
+                        "Registration Successful",
+                        response
+                )
+        );
     }
 
     @PostMapping("/login")
@@ -39,14 +37,11 @@ public class AuthController {
         LoginResponse response =
                 authService.login(request);
 
-        ApiResponse<LoginResponse> apiResponse =
-                ApiResponse.<LoginResponse>builder()
-                        .success(true)
-                        .message("Login Successful")
-                        .data(response)
-                        .timestamp(LocalDateTime.now())
-                        .build();
-
-        return ResponseEntity.ok(apiResponse);
+        return ResponseEntity.ok(
+                responseBuilder.success(
+                        "Login Successful",
+                        response
+                )
+        );
     }
 }

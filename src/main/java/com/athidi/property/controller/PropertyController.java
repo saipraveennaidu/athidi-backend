@@ -1,8 +1,10 @@
 package com.athidi.property.controller;
 
 import com.athidi.common.response.ApiResponse;
+import com.athidi.common.response.ApiResponseBuilder;
 import com.athidi.property.dto.CreatePropertyRequest;
 import com.athidi.property.dto.PropertyResponse;
+import com.athidi.property.dto.PropertySearchRequest;
 import com.athidi.property.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PropertyController {
     private final PropertyService propertyService;
+    private final ApiResponseBuilder responseBuilder;
 
     @PostMapping
     @PreAuthorize("hasRole('OWNER')")
@@ -29,12 +32,10 @@ public class PropertyController {
                 propertyService.createProperty(request);
 
         return ResponseEntity.ok(
-                ApiResponse.<PropertyResponse>builder()
-                        .success(true)
-                        .message("Property created successfully")
-                        .data(response)
-                        .timestamp(LocalDateTime.now())
-                        .build()
+                responseBuilder.success(
+                        "Property created successfully",
+                        response
+                )
         );
     }
 
@@ -46,12 +47,10 @@ public class PropertyController {
                 propertyService.getMyProperties();
 
         return ResponseEntity.ok(
-                ApiResponse.<List<PropertyResponse>>builder()
-                        .success(true)
-                        .message("Properties fetched successfully")
-                        .data(response)
-                        .timestamp(LocalDateTime.now())
-                        .build()
+                responseBuilder.success(
+                        "Properties fetched successfully",
+                        response
+                )
         );
     }
 
@@ -65,12 +64,10 @@ public class PropertyController {
                 propertyService.updateProperty(id, request);
 
         return ResponseEntity.ok(
-                ApiResponse.<PropertyResponse>builder()
-                        .success(true)
-                        .message("Property updated successfully")
-                        .data(response)
-                        .timestamp(LocalDateTime.now())
-                        .build()
+                responseBuilder.success(
+                        "Properties updated successfully",
+                        response
+                )
         );
     }
 
@@ -82,30 +79,12 @@ public class PropertyController {
         propertyService.deleteProperty(id);
 
         return ResponseEntity.ok(
-                ApiResponse.<String>builder()
-                        .success(true)
-                        .message("Property deleted successfully")
-                        .data("Deleted")
-                        .timestamp(LocalDateTime.now())
-                        .build()
+                responseBuilder.success(
+                        "Properties deleted successfully",
+                        "Deleted"
+                )
         );
     }
-
-//    @GetMapping
-//    public ResponseEntity<ApiResponse<List<PropertyResponse>>> getAllProperties() {
-//
-//        List<PropertyResponse> response =
-//                propertyService.getAllActiveProperties();
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.<List<PropertyResponse>>builder()
-//                        .success(true)
-//                        .message("Properties fetched successfully")
-//                        .data(response)
-//                        .timestamp(LocalDateTime.now())
-//                        .build()
-//        );
-//    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<PropertyResponse>>> getAllProperties(
@@ -125,12 +104,37 @@ public class PropertyController {
                 );
 
         return ResponseEntity.ok(
-                ApiResponse.<Page<PropertyResponse>>builder()
-                        .success(true)
-                        .message("Properties fetched successfully")
-                        .data(response)
-                        .timestamp(LocalDateTime.now())
-                        .build()
+                responseBuilder.success(
+                        "Properties fetched successfully",
+                        response
+                )
+        );
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<Page<PropertyResponse>>> searchProperties(
+
+            @ModelAttribute PropertySearchRequest request,
+
+            @RequestParam(defaultValue = "0") int page,
+
+            @RequestParam(defaultValue = "10") int size,
+
+            @RequestParam(defaultValue = "id") String sortBy) {
+
+        Page<PropertyResponse> response =
+                propertyService.searchProperties(
+                        request,
+                        page,
+                        size,
+                        sortBy
+                );
+
+        return ResponseEntity.ok(
+                responseBuilder.success(
+                        "Properties searched successfully",
+                        response
+                )
         );
     }
 }

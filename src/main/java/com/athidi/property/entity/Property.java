@@ -1,12 +1,16 @@
 package com.athidi.property.entity;
 
+import com.athidi.booking.entity.Booking;
 import com.athidi.common.entity.BaseEntity;
 import com.athidi.common.enums.PropertyType;
+import com.athidi.review.entity.Review;
 import com.athidi.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "properties")
@@ -59,4 +63,16 @@ public class Property extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
+
+    @OneToMany(
+            mappedBy = "property",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<Booking> bookings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "property")
+    @Builder.Default
+    private List<Review> reviews = new ArrayList<>();
 }

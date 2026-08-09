@@ -1,16 +1,24 @@
 package com.athidi.property.service;
+import com.athidi.exception.BookingException;
+import com.athidi.exception.PropertyNotFoundException;
 import com.athidi.exception.ResourceNotFoundException;
 import com.athidi.property.dto.CreatePropertyRequest;
 import com.athidi.property.dto.PropertyResponse;
+import com.athidi.property.dto.PropertySearchRequest;
 import com.athidi.property.entity.Property;
+import com.athidi.property.mapper.PropertyMapper;
 import com.athidi.property.repository.PropertyRepository;
+import com.athidi.property.specification.PropertySpecification;
+import com.athidi.security.SecurityUtils;
 import com.athidi.user.entity.User;
 import com.athidi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,24 +26,20 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PropertyServiceImpl implements PropertyService {
     private final PropertyRepository propertyRepository;
     private final UserRepository userRepository;
+    private final SecurityUtils securityUtils;
+    private final PropertyMapper propertyMapper;
 
     @Override
     public PropertyResponse createProperty(CreatePropertyRequest request) {
 
-        Authentication authentication = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        String email = authentication.getName();
-
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+        User owner = securityUtils.getCurrentUser();
+        log.info("Creating property for owner: {}", owner.getEmail());
 
         Property property = Property.builder()
                 .title(request.getTitle())
@@ -54,51 +58,21 @@ public class PropertyServiceImpl implements PropertyService {
                 .build();
 
         property = propertyRepository.save(property);
+        log.info("Property created successfully with id: {}", property.getId());
 
-        return PropertyResponse.builder()
-                .id(property.getId())
-                .title(property.getTitle())
-                .description(property.getDescription())
-                .propertyType(property.getPropertyType())
-                .pricePerNight(property.getPricePerNight())
-                .maxGuests(property.getMaxGuests())
-                .bedrooms(property.getBedrooms())
-                .bathrooms(property.getBathrooms())
-                .city(property.getCity())
-                .state(property.getState())
-                .country(property.getCountry())
-                .build();
+        return propertyMapper.toResponse(property);
     }
 
     @Override
     public List<PropertyResponse> getMyProperties() {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+        User owner = securityUtils.getCurrentUser();
 
         List<Property> properties =
                 propertyRepository.findByOwner(owner);
 
         return properties.stream()
-                .map(property -> PropertyResponse.builder()
-                        .id(property.getId())
-                        .title(property.getTitle())
-                        .description(property.getDescription())
-                        .propertyType(property.getPropertyType())
-                        .pricePerNight(property.getPricePerNight())
-                        .maxGuests(property.getMaxGuests())
-                        .bedrooms(property.getBedrooms())
-                        .bathrooms(property.getBathrooms())
-                        .city(property.getCity())
-                        .state(property.getState())
-                        .country(property.getCountry())
-                        .build())
+                .map(propertyMapper::toResponse)
                 .toList();
     }
 
@@ -107,19 +81,13 @@ public class PropertyServiceImpl implements PropertyService {
             Long propertyId,
             CreatePropertyRequest request) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+        User owner = securityUtils.getCurrentUser();
+        log.info("Updating property with id: {}", propertyId);
 
         Property property = propertyRepository
                 .findByIdAndOwner(propertyId, owner)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Property not found"));
+                        new PropertyNotFoundException("Property not found"));
 
         property.setTitle(request.getTitle());
         property.setDescription(request.getDescription());
@@ -136,64 +104,24 @@ public class PropertyServiceImpl implements PropertyService {
 
         property = propertyRepository.save(property);
 
-        return PropertyResponse.builder()
-                .id(property.getId())
-                .title(property.getTitle())
-                .description(property.getDescription())
-                .propertyType(property.getPropertyType())
-                .pricePerNight(property.getPricePerNight())
-                .maxGuests(property.getMaxGuests())
-                .bedrooms(property.getBedrooms())
-                .bathrooms(property.getBathrooms())
-                .city(property.getCity())
-                .state(property.getState())
-                .country(property.getCountry())
-                .build();
+        return propertyMapper.toResponse(property);
     }
 
     @Override
     public void deleteProperty(Long propertyId) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String email = authentication.getName();
-
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found"));
+        User owner = securityUtils.getCurrentUser();
+        log.info("Deleting property with id: {}", propertyId);
 
         Property property = propertyRepository
                 .findByIdAndOwner(propertyId, owner)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Property not found"));
+                        new PropertyNotFoundException("Property not found"));
 
         property.setActive(false);
 
         propertyRepository.save(property);
     }
-
-//    @Override
-//    public List<PropertyResponse> getAllActiveProperties() {
-//
-//        List<Property> properties = propertyRepository.findByActiveTrue();
-//
-//        return properties.stream()
-//                .map(property -> PropertyResponse.builder()
-//                        .id(property.getId())
-//                        .title(property.getTitle())
-//                        .description(property.getDescription())
-//                        .propertyType(property.getPropertyType())
-//                        .pricePerNight(property.getPricePerNight())
-//                        .maxGuests(property.getMaxGuests())
-//                        .bedrooms(property.getBedrooms())
-//                        .bathrooms(property.getBathrooms())
-//                        .city(property.getCity())
-//                        .state(property.getState())
-//                        .country(property.getCountry())
-//                        .build())
-//                .toList();
-//    }
 
     @Override
     public Page<PropertyResponse> getAllActiveProperties(
@@ -210,20 +138,51 @@ public class PropertyServiceImpl implements PropertyService {
         Page<Property> properties =
                 propertyRepository.findByActiveTrue(pageable);
 
-        return properties.map(property ->
-                PropertyResponse.builder()
-                        .id(property.getId())
-                        .title(property.getTitle())
-                        .description(property.getDescription())
-                        .propertyType(property.getPropertyType())
-                        .pricePerNight(property.getPricePerNight())
-                        .maxGuests(property.getMaxGuests())
-                        .bedrooms(property.getBedrooms())
-                        .bathrooms(property.getBathrooms())
-                        .city(property.getCity())
-                        .state(property.getState())
-                        .country(property.getCountry())
-                        .build()
+        return properties.map(propertyMapper::toResponse);
+    }
+
+    @Override
+    public Page<PropertyResponse> searchProperties(
+            PropertySearchRequest request,
+            int page,
+            int size,
+            String sortBy) {
+
+        if (request.getCheckInDate() != null
+                && request.getCheckOutDate() != null
+                && !request.getCheckOutDate()
+                .isAfter(request.getCheckInDate())) {
+
+            throw new BookingException(
+                    "Check-out date must be after check-in date");
+        }
+
+        Specification<Property> specification =
+                Specification
+                        .where(PropertySpecification.isActive())
+                        .and(PropertySpecification.hasCity(
+                                request.getCity()))
+                        .and(PropertySpecification.hasPropertyType(
+                                request.getPropertyType()))
+                        .and(PropertySpecification.priceBetween(
+                                request.getMinPrice(),
+                                request.getMaxPrice()))
+                        .and(PropertySpecification.canAccommodate(
+                                request.getGuests()))
+                        .and(PropertySpecification.hasMinimumRating(
+                                request.getMinRating()))
+                        .and(PropertySpecification.isAvailable(
+                                request.getCheckInDate(),
+                                request.getCheckOutDate()));
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(sortBy).ascending()
         );
+
+        return propertyRepository
+                .findAll(specification, pageable)
+                .map(propertyMapper::toResponse);
     }
 }
