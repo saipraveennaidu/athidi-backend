@@ -1,11 +1,14 @@
 package com.athidi.property.service;
+import com.athidi.exception.BookingException;
 import com.athidi.exception.PropertyNotFoundException;
 import com.athidi.exception.ResourceNotFoundException;
 import com.athidi.property.dto.CreatePropertyRequest;
 import com.athidi.property.dto.PropertyResponse;
+import com.athidi.property.dto.PropertySearchRequest;
 import com.athidi.property.entity.Property;
 import com.athidi.property.mapper.PropertyMapper;
 import com.athidi.property.repository.PropertyRepository;
+import com.athidi.property.specification.PropertySpecification;
 import com.athidi.security.SecurityUtils;
 import com.athidi.user.entity.User;
 import com.athidi.user.repository.UserRepository;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -119,28 +123,6 @@ public class PropertyServiceImpl implements PropertyService {
         propertyRepository.save(property);
     }
 
-//    @Override
-//    public List<PropertyResponse> getAllActiveProperties() {
-//
-//        List<Property> properties = propertyRepository.findByActiveTrue();
-//
-//        return properties.stream()
-//                .map(property -> PropertyResponse.builder()
-//                        .id(property.getId())
-//                        .title(property.getTitle())
-//                        .description(property.getDescription())
-//                        .propertyType(property.getPropertyType())
-//                        .pricePerNight(property.getPricePerNight())
-//                        .maxGuests(property.getMaxGuests())
-//                        .bedrooms(property.getBedrooms())
-//                        .bathrooms(property.getBathrooms())
-//                        .city(property.getCity())
-//                        .state(property.getState())
-//                        .country(property.getCountry())
-//                        .build())
-//                .toList();
-//    }
-
     @Override
     public Page<PropertyResponse> getAllActiveProperties(
             int page,
@@ -157,5 +139,50 @@ public class PropertyServiceImpl implements PropertyService {
                 propertyRepository.findByActiveTrue(pageable);
 
         return properties.map(propertyMapper::toResponse);
+    }
+
+    @Override
+    public Page<PropertyResponse> searchProperties(
+            PropertySearchRequest request,
+            int page,
+            int size,
+            String sortBy) {
+
+        if (request.getCheckInDate() != null
+                && request.getCheckOutDate() != null
+                && !request.getCheckOutDate()
+                .isAfter(request.getCheckInDate())) {
+
+            throw new BookingException(
+                    "Check-out date must be after check-in date");
+        }
+
+        Specification<Property> specification =
+                Specification
+                        .where(PropertySpecification.isActive())
+                        .and(PropertySpecification.hasCity(
+                                request.getCity()))
+                        .and(PropertySpecification.hasPropertyType(
+                                request.getPropertyType()))
+                        .and(PropertySpecification.priceBetween(
+                                request.getMinPrice(),
+                                request.getMaxPrice()))
+                        .and(PropertySpecification.canAccommodate(
+                                request.getGuests()))
+                        .and(PropertySpecification.hasMinimumRating(
+                                request.getMinRating()))
+                        .and(PropertySpecification.isAvailable(
+                                request.getCheckInDate(),
+                                request.getCheckOutDate()));
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(sortBy).ascending()
+        );
+
+        return propertyRepository
+                .findAll(specification, pageable)
+                .map(propertyMapper::toResponse);
     }
 }

@@ -4,6 +4,7 @@ import com.athidi.common.response.ApiResponse;
 import com.athidi.common.response.ApiResponseBuilder;
 import com.athidi.property.dto.CreatePropertyRequest;
 import com.athidi.property.dto.PropertyResponse;
+import com.athidi.property.dto.PropertySearchRequest;
 import com.athidi.property.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -85,22 +86,6 @@ public class PropertyController {
         );
     }
 
-//    @GetMapping
-//    public ResponseEntity<ApiResponse<List<PropertyResponse>>> getAllProperties() {
-//
-//        List<PropertyResponse> response =
-//                propertyService.getAllActiveProperties();
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.<List<PropertyResponse>>builder()
-//                        .success(true)
-//                        .message("Properties fetched successfully")
-//                        .data(response)
-//                        .timestamp(LocalDateTime.now())
-//                        .build()
-//        );
-//    }
-
     @GetMapping
     public ResponseEntity<ApiResponse<Page<PropertyResponse>>> getAllProperties(
 
@@ -121,6 +106,33 @@ public class PropertyController {
         return ResponseEntity.ok(
                 responseBuilder.success(
                         "Properties fetched successfully",
+                        response
+                )
+        );
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<Page<PropertyResponse>>> searchProperties(
+
+            @ModelAttribute PropertySearchRequest request,
+
+            @RequestParam(defaultValue = "0") int page,
+
+            @RequestParam(defaultValue = "10") int size,
+
+            @RequestParam(defaultValue = "id") String sortBy) {
+
+        Page<PropertyResponse> response =
+                propertyService.searchProperties(
+                        request,
+                        page,
+                        size,
+                        sortBy
+                );
+
+        return ResponseEntity.ok(
+                responseBuilder.success(
+                        "Properties searched successfully",
                         response
                 )
         );
