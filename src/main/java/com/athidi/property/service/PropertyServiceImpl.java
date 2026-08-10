@@ -185,4 +185,16 @@ public class PropertyServiceImpl implements PropertyService {
                 .findAll(specification, pageable)
                 .map(propertyMapper::toResponse);
     }
+
+    @Override
+    public void updatePropertyStatus(Long propertyId, boolean active) {
+
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Property not found"));
+
+        property.setActive(active);
+
+        propertyRepository.save(property);
+    }
 }

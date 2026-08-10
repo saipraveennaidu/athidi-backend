@@ -5,5 +5,7 @@ public enum Role {
 
     OWNER,
 
-    ADMIN
+    ADMIN,
+
+    SUPER_ADMIN
 }

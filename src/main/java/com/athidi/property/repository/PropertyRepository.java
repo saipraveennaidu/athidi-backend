@@ -15,4 +15,5 @@ public interface PropertyRepository extends JpaRepository<Property, Long>,
     List<Property> findByOwner(User owner);
     Optional<Property> findByIdAndOwner(Long id, User owner);
     Page<Property> findByActiveTrue(Pageable pageable);
+    long countByActiveTrue();
 }
