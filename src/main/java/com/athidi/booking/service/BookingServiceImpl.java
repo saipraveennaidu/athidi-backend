@@ -27,6 +27,7 @@ public class BookingServiceImpl implements  BookingService{
     private final BookingRepository bookingRepository;
     private final PropertyRepository propertyRepository;
     private final SecurityUtils securityUtils;
+    private final BookingStatusValidator bookingStatusValidator;
 
     @Override
     public BookingResponse createBooking(CreateBookingRequest request) {
@@ -152,14 +153,16 @@ public class BookingServiceImpl implements  BookingService{
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Booking not found"));
 
-        if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new BookingException(
-                    "Booking is already cancelled");
-        }
+        bookingStatusValidator.validateCancellation(
+                booking.getStatus()
+        );
 
-        if (booking.getStatus() == BookingStatus.COMPLETED) {
+        if (booking.getCheckInDate().isEqual(java.time.LocalDate.now())
+                || booking.getCheckInDate()
+                .isBefore(java.time.LocalDate.now())) {
+
             throw new BookingException(
-                    "Completed booking cannot be cancelled");
+                    "Booking cannot be cancelled after check-in date");
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
@@ -197,12 +200,31 @@ public class BookingServiceImpl implements  BookingService{
                         new ResourceNotFoundException(
                                 "Booking not found"));
 
-        if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new BookingException(
-                    "Only pending bookings can be confirmed");
-        }
+        bookingStatusValidator.validateConfirmation(
+                booking.getStatus()
+        );
 
         booking.setStatus(BookingStatus.CONFIRMED);
+
+        bookingRepository.save(booking);
+    }
+
+    @Override
+    public void completeBooking(Long bookingId) {
+
+        User owner = securityUtils.getCurrentUser();
+
+        Booking booking = bookingRepository
+                .findByIdAndPropertyOwner(bookingId, owner)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Booking not found"));
+
+        bookingStatusValidator.validateCompletion(
+                booking.getStatus()
+        );
+
+        booking.setStatus(BookingStatus.COMPLETED);
 
         bookingRepository.save(booking);
     }

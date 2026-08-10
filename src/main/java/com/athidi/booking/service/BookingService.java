@@ -24,4 +24,6 @@ public interface BookingService {
     );
 
     void confirmBooking(Long bookingId);
+
+    void completeBooking(Long bookingId);
 }
