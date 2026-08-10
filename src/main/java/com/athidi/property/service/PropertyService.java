@@ -26,4 +26,6 @@ public interface PropertyService {
             int size,
             String sortBy
     );
+
+    void updatePropertyStatus(Long propertyId, boolean active);
 }
