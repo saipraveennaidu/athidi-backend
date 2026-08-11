@@ -3,6 +3,8 @@ package com.athidi.review.service;
 import com.athidi.booking.entity.Booking;
 import com.athidi.booking.repository.BookingRepository;
 import com.athidi.common.enums.BookingStatus;
+import com.athidi.common.validation.PageRequestValidator;
+import com.athidi.common.validation.SortFieldValidator;
 import com.athidi.exception.BookingException;
 import com.athidi.exception.ResourceNotFoundException;
 import com.athidi.property.entity.Property;
@@ -20,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
@@ -27,6 +31,8 @@ public class ReviewServiceImpl implements ReviewService {
     private final BookingRepository bookingRepository;
     private final PropertyRepository propertyRepository;
     private final SecurityUtils securityUtils;
+    private final PageRequestValidator pageRequestValidator;
+    private final SortFieldValidator sortFieldValidator;
 
     @Override
     public ReviewResponse createReview(CreateReviewRequest request) {
@@ -73,6 +79,18 @@ public class ReviewServiceImpl implements ReviewService {
             int page,
             int size,
             String sortBy) {
+
+        pageRequestValidator.validate(page, size);
+
+        sortFieldValidator.validate(
+                sortBy,
+                Set.of(
+                        "id",
+                        "rating",
+                        "createdAt",
+                        "updatedAt"
+                )
+        );
 
         Property property = propertyRepository
                 .findById(propertyId)

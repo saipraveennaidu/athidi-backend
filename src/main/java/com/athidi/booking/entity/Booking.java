@@ -12,7 +12,23 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "bookings")
+@Table(
+        name = "bookings",
+        indexes = {
+                @Index(
+                        name = "idx_booking_property_dates",
+                        columnList = "property_id, check_in_date, check_out_date"
+                ),
+                @Index(
+                        name = "idx_booking_property_status",
+                        columnList = "property_id, status"
+                ),
+                @Index(
+                        name = "idx_booking_customer",
+                        columnList = "customer_id"
+                )
+        }
+)
 @Getter
 @Setter
 @Builder

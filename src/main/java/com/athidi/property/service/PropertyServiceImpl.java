@@ -1,4 +1,6 @@
 package com.athidi.property.service;
+import com.athidi.common.validation.PageRequestValidator;
+import com.athidi.common.validation.SortFieldValidator;
 import com.athidi.exception.BookingException;
 import com.athidi.exception.PropertyNotFoundException;
 import com.athidi.exception.ResourceNotFoundException;
@@ -23,8 +25,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -34,6 +38,8 @@ public class PropertyServiceImpl implements PropertyService {
     private final UserRepository userRepository;
     private final SecurityUtils securityUtils;
     private final PropertyMapper propertyMapper;
+    private final PageRequestValidator pageRequestValidator;
+    private final SortFieldValidator sortFieldValidator;
 
     @Override
     public PropertyResponse createProperty(CreatePropertyRequest request) {
@@ -129,6 +135,18 @@ public class PropertyServiceImpl implements PropertyService {
             int size,
             String sortBy) {
 
+        pageRequestValidator.validate(page, size);
+
+        sortFieldValidator.validate(
+                sortBy,
+                Set.of(
+                        "id",
+                        "title",
+                        "pricePerNight",
+                        "createdAt"
+                )
+        );
+
         Pageable pageable = PageRequest.of(
                 page,
                 size,
@@ -147,6 +165,18 @@ public class PropertyServiceImpl implements PropertyService {
             int page,
             int size,
             String sortBy) {
+
+        pageRequestValidator.validate(page, size);
+
+        sortFieldValidator.validate(
+                sortBy,
+                Set.of(
+                        "id",
+                        "title",
+                        "pricePerNight",
+                        "createdAt"
+                )
+        );
 
         if (request.getCheckInDate() != null
                 && request.getCheckOutDate() != null
@@ -186,6 +216,7 @@ public class PropertyServiceImpl implements PropertyService {
                 .map(propertyMapper::toResponse);
     }
 
+    @Transactional
     @Override
     public void updatePropertyStatus(Long propertyId, boolean active) {
 
