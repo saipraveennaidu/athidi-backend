@@ -116,4 +116,19 @@ public class BookingController {
                 )
         );
     }
+
+    @PatchMapping("/{id}/complete")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ApiResponse<String>> completeBooking(
+            @PathVariable Long id) {
+
+        bookingService.completeBooking(id);
+
+        return ResponseEntity.ok(
+                responseBuilder.success(
+                        "Booking completed successfully",
+                        "Completed"
+                )
+        );
+    }
 }

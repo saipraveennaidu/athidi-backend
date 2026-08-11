@@ -7,6 +7,8 @@ import com.athidi.booking.entity.Booking;
 import com.athidi.booking.repository.BookingRepository;
 import com.athidi.common.enums.BookingStatus;
 import com.athidi.common.enums.Role;
+import com.athidi.common.validation.PageRequestValidator;
+import com.athidi.common.validation.SortFieldValidator;
 import com.athidi.exception.ResourceNotFoundException;
 import com.athidi.property.repository.PropertyRepository;
 import com.athidi.user.entity.User;
@@ -17,8 +19,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +30,26 @@ public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final PropertyRepository propertyRepository;
+    private final PageRequestValidator pageRequestValidator;
+    private final SortFieldValidator sortFieldValidator;
 
     @Override
     public Page<AdminUserResponse> getAllUsers(
             int page,
             int size,
             String sortBy) {
+
+        pageRequestValidator.validate(page, size);
+
+        sortFieldValidator.validate(
+                sortBy,
+                Set.of(
+                        "id",
+                        "createdAt",
+                        "email",
+                        "firstName"
+                )
+        );
 
         Pageable pageable = PageRequest.of(
                 page,
@@ -44,6 +62,7 @@ public class AdminServiceImpl implements AdminService {
                 .map(this::mapToResponse);
     }
 
+    @Transactional
     @Override
     public void addRoleToUser(Long userId, Role role) {
 
@@ -57,6 +76,7 @@ public class AdminServiceImpl implements AdminService {
         userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public void updateUserStatus(Long userId, boolean active) {
 
@@ -74,6 +94,8 @@ public class AdminServiceImpl implements AdminService {
     public Page<AdminBookingResponse> getAllBookings(
             int page,
             int size) {
+
+        pageRequestValidator.validate(page, size);
 
         Pageable pageable = PageRequest.of(
                 page,
