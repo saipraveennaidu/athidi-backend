@@ -3,6 +3,8 @@ package com.athidi.booking.service;
 import com.athidi.booking.dto.BookingResponse;
 import com.athidi.booking.dto.CreateBookingRequest;
 import com.athidi.booking.entity.Booking;
+import com.athidi.common.validation.PageRequestValidator;
+import com.athidi.common.validation.SortFieldValidator;
 import com.athidi.exception.BookingException;
 import com.athidi.booking.repository.BookingRepository;
 import com.athidi.common.enums.BookingStatus;
@@ -17,9 +19,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +31,11 @@ public class BookingServiceImpl implements  BookingService{
     private final BookingRepository bookingRepository;
     private final PropertyRepository propertyRepository;
     private final SecurityUtils securityUtils;
+    private final PageRequestValidator pageRequestValidator;
+    private final SortFieldValidator sortFieldValidator;
     private final BookingStatusValidator bookingStatusValidator;
 
+    @Transactional
     @Override
     public BookingResponse createBooking(CreateBookingRequest request) {
 
@@ -114,6 +121,19 @@ public class BookingServiceImpl implements  BookingService{
             int size,
             String sortBy) {
 
+        pageRequestValidator.validate(page, size);
+
+        sortFieldValidator.validate(
+                sortBy,
+                Set.of(
+                        "createdAt",
+                        "checkInDate",
+                        "checkOutDate",
+                        "totalPrice",
+                        "status"
+                )
+        );
+
         User customer = securityUtils.getCurrentUser();
 
         Pageable pageable = PageRequest.of(
@@ -143,6 +163,7 @@ public class BookingServiceImpl implements  BookingService{
                 .build();
     }
 
+    @Transactional
     @Override
     public void cancelBooking(Long bookingId) {
 
@@ -176,6 +197,19 @@ public class BookingServiceImpl implements  BookingService{
             int size,
             String sortBy) {
 
+        pageRequestValidator.validate(page, size);
+
+        sortFieldValidator.validate(
+                sortBy,
+                Set.of(
+                        "createdAt",
+                        "checkInDate",
+                        "checkOutDate",
+                        "totalPrice",
+                        "status"
+                )
+        );
+
         User owner = securityUtils.getCurrentUser();
 
         Pageable pageable = PageRequest.of(
@@ -189,6 +223,7 @@ public class BookingServiceImpl implements  BookingService{
                 .map(this::mapToResponse);
     }
 
+    @Transactional
     @Override
     public void confirmBooking(Long bookingId) {
 
@@ -209,6 +244,7 @@ public class BookingServiceImpl implements  BookingService{
         bookingRepository.save(booking);
     }
 
+    @Transactional
     @Override
     public void completeBooking(Long bookingId) {
 
