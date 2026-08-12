@@ -3,6 +3,8 @@ package com.athidi.property.entity;
 import com.athidi.booking.entity.Booking;
 import com.athidi.common.entity.BaseEntity;
 import com.athidi.common.enums.PropertyType;
+import com.athidi.common.enums.PropertyCategory;
+import com.athidi.common.enums.GenderCategory;
 import com.athidi.review.entity.Review;
 import com.athidi.user.entity.User;
 import jakarta.persistence.*;
@@ -29,6 +31,29 @@ public class Property extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PropertyType propertyType;
+
+    @Enumerated(EnumType.STRING)
+    private PropertyCategory category;
+
+    @Enumerated(EnumType.STRING)
+    private GenderCategory gender;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal securityDeposit;
+
+    private String noticePeriod;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "property_images", joinColumns = @JoinColumn(name = "property_id"))
+    @Column(name = "image_url")
+    @Builder.Default
+    private List<String> images = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "property_amenities", joinColumns = @JoinColumn(name = "property_id"))
+    @Column(name = "amenity_name")
+    @Builder.Default
+    private List<String> amenities = new ArrayList<>();
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePerNight;

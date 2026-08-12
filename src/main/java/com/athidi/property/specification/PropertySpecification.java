@@ -3,6 +3,8 @@ package com.athidi.property.specification;
 import com.athidi.booking.entity.Booking;
 import com.athidi.common.enums.BookingStatus;
 import com.athidi.common.enums.PropertyType;
+import com.athidi.common.enums.PropertyCategory;
+import com.athidi.common.enums.GenderCategory;
 import com.athidi.property.entity.Property;
 import com.athidi.review.entity.Review;
 import jakarta.persistence.criteria.Join;
@@ -15,6 +17,29 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class PropertySpecification {
+    public static Specification<Property> hasCategory(
+            PropertyCategory category) {
+
+        return (root, query, criteriaBuilder) ->
+                category == null
+                        ? null
+                        : criteriaBuilder.equal(
+                        root.get("category"),
+                        category
+                );
+    }
+
+    public static Specification<Property> hasGender(
+            GenderCategory gender) {
+
+        return (root, query, criteriaBuilder) ->
+                gender == null || gender == GenderCategory.ANY
+                        ? null
+                        : criteriaBuilder.equal(
+                        root.get("gender"),
+                        gender
+                );
+    }
     public static Specification<Property> hasCity(String city) {
 
         return (root, query, criteriaBuilder) ->

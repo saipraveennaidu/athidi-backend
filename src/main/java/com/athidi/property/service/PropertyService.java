@@ -27,5 +27,7 @@ public interface PropertyService {
             String sortBy
     );
 
+    PropertyResponse getPropertyById(Long id);
+
     void updatePropertyStatus(Long propertyId, boolean active);
 }

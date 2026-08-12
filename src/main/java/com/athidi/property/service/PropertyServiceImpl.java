@@ -27,6 +27,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -51,6 +52,12 @@ public class PropertyServiceImpl implements PropertyService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .propertyType(request.getPropertyType())
+                .category(request.getCategory())
+                .gender(request.getGender())
+                .securityDeposit(request.getSecurityDeposit())
+                .noticePeriod(request.getNoticePeriod())
+                .images(request.getImages() != null ? request.getImages() : new ArrayList<>())
+                .amenities(request.getAmenities() != null ? request.getAmenities() : new ArrayList<>())
                 .pricePerNight(request.getPricePerNight())
                 .maxGuests(request.getMaxGuests())
                 .bedrooms(request.getBedrooms())
@@ -98,6 +105,12 @@ public class PropertyServiceImpl implements PropertyService {
         property.setTitle(request.getTitle());
         property.setDescription(request.getDescription());
         property.setPropertyType(request.getPropertyType());
+        property.setCategory(request.getCategory());
+        property.setGender(request.getGender());
+        property.setSecurityDeposit(request.getSecurityDeposit());
+        property.setNoticePeriod(request.getNoticePeriod());
+        property.setImages(request.getImages() != null ? request.getImages() : new ArrayList<>());
+        property.setAmenities(request.getAmenities() != null ? request.getAmenities() : new ArrayList<>());
         property.setPricePerNight(request.getPricePerNight());
         property.setMaxGuests(request.getMaxGuests());
         property.setBedrooms(request.getBedrooms());
@@ -190,6 +203,10 @@ public class PropertyServiceImpl implements PropertyService {
         Specification<Property> specification =
                 Specification
                         .where(PropertySpecification.isActive())
+                        .and(PropertySpecification.hasCategory(
+                                request.getCategory()))
+                        .and(PropertySpecification.hasGender(
+                                request.getGender()))
                         .and(PropertySpecification.hasCity(
                                 request.getCity()))
                         .and(PropertySpecification.hasPropertyType(
@@ -214,6 +231,14 @@ public class PropertyServiceImpl implements PropertyService {
         return propertyRepository
                 .findAll(specification, pageable)
                 .map(propertyMapper::toResponse);
+    }
+
+    @Override
+    public PropertyResponse getPropertyById(Long id) {
+        log.info("Fetching property with id: {}", id);
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> new PropertyNotFoundException("Property not found with id: " + id));
+        return propertyMapper.toResponse(property);
     }
 
     @Transactional
