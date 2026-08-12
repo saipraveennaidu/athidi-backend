@@ -1,10 +1,13 @@
 package com.athidi.property.dto;
 
 import com.athidi.common.enums.PropertyType;
+import com.athidi.common.enums.PropertyCategory;
+import com.athidi.common.enums.GenderCategory;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,6 +23,21 @@ public class CreatePropertyRequest {
 
     @NotNull
     private PropertyType propertyType;
+
+    @NotNull
+    private PropertyCategory category;
+
+    @NotNull
+    private GenderCategory gender;
+
+    @DecimalMin("0.0")
+    private BigDecimal securityDeposit;
+
+    private String noticePeriod;
+
+    private List<String> images;
+
+    private List<String> amenities;
 
     @NotNull
     @DecimalMin("0.0")

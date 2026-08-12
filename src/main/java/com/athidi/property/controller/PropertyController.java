@@ -86,6 +86,17 @@ public class PropertyController {
         );
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<PropertyResponse>> getPropertyById(@PathVariable Long id) {
+        PropertyResponse response = propertyService.getPropertyById(id);
+        return ResponseEntity.ok(
+                responseBuilder.success(
+                        "Property fetched successfully",
+                        response
+                )
+        );
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<Page<PropertyResponse>>> getAllProperties(
 
