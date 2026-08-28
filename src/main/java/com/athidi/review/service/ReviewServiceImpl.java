@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -34,6 +35,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final PageRequestValidator pageRequestValidator;
     private final SortFieldValidator sortFieldValidator;
 
+    @Transactional
     @Override
     public ReviewResponse createReview(CreateReviewRequest request) {
 
@@ -109,6 +111,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .map(this::mapToResponse);
     }
 
+    @Transactional
     @Override
     public ReviewResponse updateReview(
             Long reviewId,
@@ -130,6 +133,7 @@ public class ReviewServiceImpl implements ReviewService {
         return mapToResponse(review);
     }
 
+    @Transactional
     @Override
     public void deleteReview(Long reviewId) {
 

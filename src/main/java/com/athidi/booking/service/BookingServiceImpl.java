@@ -44,7 +44,7 @@ public class BookingServiceImpl implements  BookingService{
 
         // 2. Find property
         Property property = propertyRepository
-                .findById(request.getPropertyId())
+                .findByIdWithWriteLock(request.getPropertyId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Property not found"));
 
@@ -238,6 +238,27 @@ public class BookingServiceImpl implements  BookingService{
         bookingStatusValidator.validateConfirmation(
                 booking.getStatus()
         );
+
+        // Pessimistic lock the property to prevent concurrent/race conditions when confirming overlapping bookings
+        Property property = propertyRepository
+                .findByIdWithWriteLock(booking.getProperty().getId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Property not found"));
+
+        // Check for any confirmed overlapping booking
+        boolean alreadyBooked =
+                bookingRepository
+                        .existsByPropertyAndStatusAndCheckInDateLessThanAndCheckOutDateGreaterThan(
+                                property,
+                                BookingStatus.CONFIRMED,
+                                booking.getCheckOutDate(),
+                                booking.getCheckInDate()
+                        );
+
+        if (alreadyBooked) {
+            throw new BookingException(
+                    "Property is already booked for the selected dates");
+        }
 
         booking.setStatus(BookingStatus.CONFIRMED);
 
