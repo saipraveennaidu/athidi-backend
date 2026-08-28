@@ -16,6 +16,8 @@ import com.athidi.user.entity.User;
 import com.athidi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +44,7 @@ public class PropertyServiceImpl implements PropertyService {
     private final PageRequestValidator pageRequestValidator;
     private final SortFieldValidator sortFieldValidator;
 
+    @Transactional
     @Override
     public PropertyResponse createProperty(CreatePropertyRequest request) {
 
@@ -89,7 +92,12 @@ public class PropertyServiceImpl implements PropertyService {
                 .toList();
     }
 
+    @Transactional
     @Override
+    @CacheEvict(
+            value = "properties",
+            key = "'property:' + #propertyId"
+    )
     public PropertyResponse updateProperty(
             Long propertyId,
             CreatePropertyRequest request) {
@@ -126,7 +134,12 @@ public class PropertyServiceImpl implements PropertyService {
         return propertyMapper.toResponse(property);
     }
 
+    @Transactional
     @Override
+    @CacheEvict(
+            value = "properties",
+            key = "'property:' + #propertyId"
+    )
     public void deleteProperty(Long propertyId) {
 
         User owner = securityUtils.getCurrentUser();
@@ -234,6 +247,10 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
+    @Cacheable(
+            value = "properties",
+            key = "'property:' + #id"
+    )
     public PropertyResponse getPropertyById(Long id) {
         log.info("Fetching property with id: {}", id);
         Property property = propertyRepository.findById(id)
@@ -243,6 +260,10 @@ public class PropertyServiceImpl implements PropertyService {
 
     @Transactional
     @Override
+    @CacheEvict(
+            value = "properties",
+            key = "'property:' + #propertyId"
+    )
     public void updatePropertyStatus(Long propertyId, boolean active) {
 
         Property property = propertyRepository.findById(propertyId)
