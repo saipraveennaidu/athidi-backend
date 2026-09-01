@@ -60,6 +60,25 @@ jobs:
       - name: Build application
         run: mvn package -DskipTests
 
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ghcr.io/${{ github.repository_owner }}/athidi-backend:latest .
+          
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image
+        if: github.event_name == 'push'
+        run: |
+          docker push \
+            ghcr.io/${{ github.repository_owner }}/athidi-backend:latest
+
       # 5. Log in to GitHub Container Registry
       - name: Log in to GHCR
         if: github.event_name == 'push'
